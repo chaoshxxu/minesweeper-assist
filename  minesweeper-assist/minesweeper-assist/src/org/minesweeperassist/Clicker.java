@@ -17,42 +17,18 @@ import org.minesweeperassist.MouseAction.ClickType;
  */
 public class Clicker extends Thread {
 	
-	/**
-	 * 雷区的左端x坐标
-	 */
-	private int minX;
-
-	/**
-	 * 雷区的右端x坐标
-	 */
-	private int maxX;
-
-	/**
-	 * 雷区的上端y坐标
-	 */
-	private int minY;
-
-	/**
-	 * 雷区的下端y坐标
-	 */
-	private int maxY;
-	
-	/**
-	 * 每个格子y方向的像素数
-	 */
-	private int gridHeight;
-	
-	/**
-	 * 每个格子x方向的像素数
-	 */
-	private int gridWidth;
-
-	
 	private Controller controller;
+	private GridNumberRecognizer recognizer;
 	private Robot robot;
 	
-	public Clicker(Controller controller) throws AWTException {
+	private boolean visited[][];
+	
+	private static int dy[] = {-1, -1, -1, 0, 0, 0, 1, 1, 1}; 
+	private static int dx[] = {-1, 0, 1, -1, 0, 1, -1, 0, 1}; 
+	
+	public Clicker(Controller controller, GridNumberRecognizer recognizer) throws AWTException {
 		this.controller = controller;
+		this.recognizer = recognizer;
 		this.robot = new Robot();
 	}
 	
@@ -71,8 +47,8 @@ public class Clicker extends Thread {
 			System.out.println("different location, try again...");
 			lastLocation = curLocation1;
 		}
-		minX = curLocation1.x;
-		minY = curLocation1.y;
+		MineFieldInfo.minX = curLocation1.x;
+		MineFieldInfo.minY = curLocation1.y;
 		
 		System.out.println("move to right-bottom");
 		lastLocation = MouseInfo.getPointerInfo().getLocation();
@@ -85,15 +61,18 @@ public class Clicker extends Thread {
 			System.out.println("different location, try again...");
 			lastLocation = curLocation2;
 		}
-		maxX = curLocation2.x;
-		maxY = curLocation2.y;
+		MineFieldInfo.maxX = curLocation2.x;
+		MineFieldInfo.maxY = curLocation2.y;
 		
-		gridWidth = (maxX - minX + controller.getxGrids() / 2) / controller.getxGrids();
-		gridHeight = (maxY - minY + controller.getyGrids() / 2) / controller.getyGrids();
-		System.out.println(maxX - minX);
-		System.out.println(maxY - minY);
-		System.out.println(gridWidth);
-		System.out.println(gridHeight);
+		MineFieldInfo.gridWidth = (MineFieldInfo.maxX - MineFieldInfo.minX + MineFieldInfo.xGrids / 2) / MineFieldInfo.xGrids;
+		MineFieldInfo.gridHeight = (MineFieldInfo.maxY - MineFieldInfo.minY + MineFieldInfo.yGrids / 2) / MineFieldInfo.yGrids;
+
+		visited = new boolean[MineFieldInfo.yGrids][MineFieldInfo.xGrids];
+		
+		System.out.println(MineFieldInfo.maxX - MineFieldInfo.minX);
+		System.out.println(MineFieldInfo.maxY - MineFieldInfo.minY);
+		System.out.println(MineFieldInfo.gridWidth);
+		System.out.println(MineFieldInfo.gridHeight);
 	}
 	
 	@Override
@@ -103,7 +82,9 @@ public class Clicker extends Thread {
 			List<MouseAction> actions = controller.getActions();
 			for (MouseAction mouseAction : actions) {
 				System.out.println(mouseAction.location.x + ", " + mouseAction.location.y);
-				robot.mouseMove(minX + gridWidth * mouseAction.location.x + gridWidth / 2, minY + gridHeight * mouseAction.location.y + gridHeight / 2);
+				int screenX = MineFieldInfo.minX + MineFieldInfo.gridWidth * mouseAction.location.x + MineFieldInfo.gridWidth / 2;
+				int screenY = MineFieldInfo.minY + MineFieldInfo.gridHeight * mouseAction.location.y + MineFieldInfo.gridHeight / 2;
+				robot.mouseMove(screenX, screenY);
 				if (mouseAction.clickType == ClickType.LEFT) {
 					robot.mousePress(InputEvent.BUTTON1_MASK);
 					robot.mouseRelease(InputEvent.BUTTON1_MASK);
@@ -116,6 +97,7 @@ public class Clicker extends Thread {
 					robot.mouseRelease(InputEvent.BUTTON3_MASK);
 					robot.mouseRelease(InputEvent.BUTTON1_MASK);
 				}
+				detectNewGrids(mouseAction.location.x, mouseAction.location.y);
 				robot.delay(5);
 			}
 		}
@@ -124,7 +106,16 @@ public class Clicker extends Thread {
 
 
 
-	public void setController(Controller controller) {
-		this.controller = controller;
+	private void detectNewGrids(int sx, int sy) {
+		for (int i = 0; i < 9; i++) {
+			int tx = sx + dx[i];
+			int ty = sy + dy[i];
+			if (tx >= 0 && tx < MineFieldInfo.xGrids && ty >= 0 && ty < MineFieldInfo.yGrids && !visited[ty][tx]) {
+				visited[ty][tx] = true;
+				Integer number = recognizer.tellGridNumber(tx, ty);
+				controller.informNewUncoverdGrid(tx, ty, number);
+			}
+		}
 	}
+	
 }
