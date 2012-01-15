@@ -7,12 +7,16 @@ import java.awt.Point;
 public class Client {
 	
 	Controller controller;
+	GridNumberRecognizer recognizer;
 	Clicker clicker;
 	
 	
 	public void work() throws AWTException, InterruptedException {
+		MineFieldInfo.xGrids = 30;
+		MineFieldInfo.yGrids = 16;
+		
 		controller = new Controller();
-		clicker = new Clicker(controller);
+		clicker = new Clicker(controller, recognizer);
 		
 		controller.init();
 		clicker.init();

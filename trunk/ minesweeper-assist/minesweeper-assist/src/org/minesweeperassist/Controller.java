@@ -16,17 +16,7 @@ import org.minesweeperassist.MouseAction.ClickType;
 public class Controller extends Thread {
 	
 	/**
-	 * y方向有多少格子
-	 */
-	private int yGrids;
-	
-	/**
-	 * x方向有多少格子
-	 */
-	private int xGrids;
-	
-	/**
-	 * 有信息待挖掘的格子
+	 * 有新信息待挖掘的格子
 	 */
 	private LinkedBlockingQueue<Point> newGrids;
 	
@@ -48,9 +38,7 @@ public class Controller extends Thread {
 	 * 初始化参数
 	 */
 	public void init() {
-		yGrids = 16;
-		xGrids = 30;
-		mineNumber = new Integer[yGrids][xGrids];
+		mineNumber = new Integer[MineFieldInfo.yGrids][MineFieldInfo.xGrids];
 	}
 
 	
@@ -60,7 +48,7 @@ public class Controller extends Thread {
 	 */
 	public List<MouseAction> getActions() {
 		List<MouseAction> result = new ArrayList<MouseAction>();
-		result.add(new MouseAction(random.nextInt(xGrids), random.nextInt(yGrids), ClickType.RIGHT));
+		result.add(new MouseAction(random.nextInt(MineFieldInfo.xGrids), random.nextInt(MineFieldInfo.yGrids), ClickType.RIGHT));
 		return result;
 	}
 	
@@ -73,9 +61,9 @@ public class Controller extends Thread {
 		}
 	}
 	
-	public void informNewUncoverdGrid(Point point, Integer number) {
-		newGrids.add(point);
-		mineNumber[point.y][point.x] = number;
+	public void informNewUncoverdGrid(int x, int y, Integer number) {
+		newGrids.add(new Point(x, y));
+		mineNumber[y][x] = number;
 	}
 	
 	private void think() throws InterruptedException {
@@ -86,20 +74,6 @@ public class Controller extends Thread {
 
 	}
 
-
-
-	public int getyGrids() {
-		return yGrids;
-	}
-	public void setyGrids(int yGrids) {
-		this.yGrids = yGrids;
-	}
-	public int getxGrids() {
-		return xGrids;
-	}
-	public void setxGrids(int xGrids) {
-		this.xGrids = xGrids;
-	}
 	
 
 }
