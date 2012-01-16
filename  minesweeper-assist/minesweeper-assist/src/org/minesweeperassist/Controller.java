@@ -18,7 +18,7 @@ public class Controller extends Thread {
 	/**
 	 * 有新信息待挖掘的格子
 	 */
-	private LinkedBlockingQueue<Point> newGrids;
+	private LinkedBlockingQueue<Point[]> newGrids;
 	
 	/**
 	 * 格子上的数字
@@ -29,7 +29,7 @@ public class Controller extends Thread {
 	private Random random = new Random();
 	
 	public Controller() {
-		newGrids = new LinkedBlockingQueue<Point>();
+		newGrids = new LinkedBlockingQueue<Point[]>();
 	}
 	
 	
@@ -62,13 +62,13 @@ public class Controller extends Thread {
 	}
 	
 	public void informNewUncoverdGrid(int x, int y, Integer number) {
-		newGrids.add(new Point(x, y));
+		newGrids.add(new Point[]{new Point(x, y), null});
 		mineNumber[y][x] = number;
 	}
 	
 	private void think() throws InterruptedException {
 		while (true) {
-			Point coord = newGrids.take();
+			Point[] pts = newGrids.take();
 			System.out.println("Get it!");
 		}
 
@@ -76,4 +76,9 @@ public class Controller extends Thread {
 
 	
 
+}
+
+class PointPair {
+	public Point p1;
+	public Point p2;
 }
