@@ -16,9 +16,9 @@ import org.minesweeperassist.MouseAction.ClickType;
 public class Controller extends Thread {
 	
 	/**
-	 * 有新信息待挖掘的格子
+	 * 有新信息待挖掘的格子对
 	 */
-	private LinkedBlockingQueue<Point[]> newGrids;
+	private LinkedBlockingQueue<PointPair> newGrids;
 	
 	/**
 	 * 格子上的数字
@@ -29,7 +29,7 @@ public class Controller extends Thread {
 	private Random random = new Random();
 	
 	public Controller() {
-		newGrids = new LinkedBlockingQueue<Point[]>();
+		newGrids = new LinkedBlockingQueue<PointPair>();
 	}
 	
 	
@@ -62,14 +62,16 @@ public class Controller extends Thread {
 	}
 	
 	public void informNewUncoverdGrid(int x, int y, Integer number) {
-		newGrids.add(new Point[]{new Point(x, y), null});
+		newGrids.add(new PointPair(new Point(x, y), null));
 		mineNumber[y][x] = number;
 	}
 	
 	private void think() throws InterruptedException {
 		while (true) {
-			Point[] pts = newGrids.take();
+			PointPair pair = newGrids.take();
 			System.out.println("Get it!");
+			
+			
 		}
 
 	}
@@ -79,6 +81,11 @@ public class Controller extends Thread {
 }
 
 class PointPair {
-	public Point p1;
-	public Point p2;
+	public Point a;
+	public Point b;
+	
+	public PointPair(Point a, Point b) {
+		this.a = a;
+		this.b = b;
+	}
 }

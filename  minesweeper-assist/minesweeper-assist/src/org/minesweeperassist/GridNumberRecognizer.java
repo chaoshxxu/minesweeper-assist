@@ -22,9 +22,9 @@ public class GridNumberRecognizer {
 	 * 6	开
 	 * 7	开
 	 * 8	开
-	 * 9	未开
-	 * 10	插旗
-	 * 11	Bomb!
+	 * 9	Bomb!
+	 * 10	未开
+	 * 11	插旗
 	 *
 	 * -----
 	 * |0|1|
@@ -44,8 +44,8 @@ public class GridNumberRecognizer {
 		Integer number = null, idx = 0;
 		while (br.ready()) {
 			String line = br.readLine();
-			if (line.matches("//\\d")) {
-				number = Integer.parseInt(line.replaceAll("\\D+", ""));
+			if (line.matches("\\d+")) {
+				number = Integer.parseInt(line);
 			} else {
 				Matcher matcher = Pattern.compile("(\\d+)\\D+(\\d+)\\D+(\\d+)").matcher(line);
 				if (matcher.find()) {
@@ -73,11 +73,12 @@ public class GridNumberRecognizer {
 		boolean blankFound = false;
 		for (int y = MineFieldInfo.minY + gridY * MineFieldInfo.gridHeight; y < MineFieldInfo.minY + (gridY + 1) * MineFieldInfo.gridHeight - 1; y++) {
 			for (int x = MineFieldInfo.minX + gridX * MineFieldInfo.gridWidth; x < MineFieldInfo.minX + (gridX + 1) * MineFieldInfo.gridWidth - 1; x++) {
+				Color ltColor = robot.getPixelColor(x, y);
+				Color rtColor = robot.getPixelColor(x + 1, y);
+				Color lbColor = robot.getPixelColor(x, y + 1);
+				Color rbColor = robot.getPixelColor(x + 1, y + 1);
 				for (int i = 0; i <= 11; i++) {
-					if (robot.getPixelColor(x, y).equals(gridSign[i][0]) &&
-						robot.getPixelColor(x + 1, y).equals(gridSign[i][1]) &&
-						robot.getPixelColor(x, y + 1).equals(gridSign[i][2]) &&
-						robot.getPixelColor(x + 1, y + 1).equals(gridSign[i][3])) {
+					if (ltColor.equals(gridSign[i][0]) && rtColor.equals(gridSign[i][1]) && lbColor.equals(gridSign[i][2]) && rbColor.equals(gridSign[i][3])) {
 						if (i > 0) {
 							return i;
 						} else {
