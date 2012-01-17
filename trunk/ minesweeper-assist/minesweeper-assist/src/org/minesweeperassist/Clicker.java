@@ -111,9 +111,11 @@ public class Clicker extends Thread {
 			int tx = sx + dx[i];
 			int ty = sy + dy[i];
 			if (tx >= 0 && tx < MineFieldInfo.xGrids && ty >= 0 && ty < MineFieldInfo.yGrids && !visited[ty][tx]) {
-				visited[ty][tx] = true;
 				Integer number = recognizer.tellGridNumber(tx, ty);
-				controller.informNewUncoverdGrid(tx, ty, number);
+				if (number == null || number <= 9) {
+					controller.informNewUncoverdGrid(tx, ty, number);
+					visited[ty][tx] = true;
+				}
 			}
 		}
 	}
