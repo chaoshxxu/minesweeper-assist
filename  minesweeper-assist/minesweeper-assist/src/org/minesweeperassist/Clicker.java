@@ -5,6 +5,7 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
+import java.util.Date;
 import java.util.List;
 
 import org.minesweeperassist.MouseAction.ClickType;
@@ -30,61 +31,45 @@ public class Clicker extends Thread {
 		this.controller = controller;
 		this.recognizer = recognizer;
 		this.robot = new Robot();
-	}
-	
-	
-	public void init() throws InterruptedException {
-		Point lastLocation, curLocation1, curLocation2;
-		
-		System.out.println("move to left-top");
-		lastLocation = MouseInfo.getPointerInfo().getLocation();
-		while (true) {
-			Thread.sleep(1000);
-			curLocation1 = MouseInfo.getPointerInfo().getLocation();
-			if (curLocation1.equals(lastLocation)) {
-				break;
-			}
-			System.out.println("different location, try again...");
-			lastLocation = curLocation1;
-		}
-		MineFieldInfo.minX = curLocation1.x;
-		MineFieldInfo.minY = curLocation1.y;
-		
-		System.out.println("move to right-bottom");
-		lastLocation = MouseInfo.getPointerInfo().getLocation();
-		while (true) {
-			Thread.sleep(1000);
-			curLocation2 = MouseInfo.getPointerInfo().getLocation();
-			if (curLocation2.equals(lastLocation) && curLocation1.distance(curLocation2) > 100.0) {
-				break;
-			}
-			System.out.println("different location, try again...");
-			lastLocation = curLocation2;
-		}
-		MineFieldInfo.maxX = curLocation2.x;
-		MineFieldInfo.maxY = curLocation2.y;
-		
-		MineFieldInfo.gridWidth = (MineFieldInfo.maxX - MineFieldInfo.minX + MineFieldInfo.xGrids / 2) / MineFieldInfo.xGrids;
-		MineFieldInfo.gridHeight = (MineFieldInfo.maxY - MineFieldInfo.minY + MineFieldInfo.yGrids / 2) / MineFieldInfo.yGrids;
-
 		visited = new boolean[MineFieldInfo.yGrids][MineFieldInfo.xGrids];
-		
-		System.out.println(MineFieldInfo.maxX - MineFieldInfo.minX);
-		System.out.println(MineFieldInfo.maxY - MineFieldInfo.minY);
-		System.out.println(MineFieldInfo.gridWidth);
-		System.out.println(MineFieldInfo.gridHeight);
 	}
 	
 	@Override
 	public void run() {
-		int cnt = 10000;
-		while (cnt-- > 0) {
+		try {
+			checkIfNotPlayed();
+			letsMove();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			controller.displayStatus();
+			MainPanel.instance.startBtn.setEnabled(true);
+		}
+	}
+	
+	private void checkIfNotPlayed() {
+		for (int y = 0; y < MineFieldInfo.yGrids; y++) {
+			for (int x = 0; x < MineFieldInfo.xGrids; x++) {
+				Integer number = recognizer.tellGridNumber(x, y); 
+				if (number == null) {
+					throw new RuntimeException("Grid recognition exception");
+				} else if (number != 10) {
+					throw new RuntimeException("Please reset the game first");
+				}
+			}
+		}
+	}
+
+	private void letsMove() throws InterruptedException {
+		while (true) {
 			List<MouseAction> actions = controller.getActions();
+			if (actions.isEmpty()) {
+				break;
+			}
 			for (MouseAction mouseAction : actions) {
-				System.out.println(mouseAction.location.x + ", " + mouseAction.location.y);
-				int screenX = MineFieldInfo.minX + MineFieldInfo.gridWidth * mouseAction.location.x + MineFieldInfo.gridWidth / 2;
-				int screenY = MineFieldInfo.minY + MineFieldInfo.gridHeight * mouseAction.location.y + MineFieldInfo.gridHeight / 2;
-				robot.mouseMove(screenX, screenY);
+				System.out.println(mouseAction.location.x + "," + mouseAction.location.y);
+				Point screenCoord = MineFieldInfo.getScreenCoord(mouseAction.location);
+				robot.mouseMove(screenCoord.x, screenCoord.y);
 				if (mouseAction.clickType == ClickType.LEFT) {
 					robot.mousePress(InputEvent.BUTTON1_MASK);
 					robot.mouseRelease(InputEvent.BUTTON1_MASK);
@@ -97,26 +82,36 @@ public class Clicker extends Thread {
 					robot.mouseRelease(InputEvent.BUTTON3_MASK);
 					robot.mouseRelease(InputEvent.BUTTON1_MASK);
 				}
-				detectNewGrids(mouseAction.location.x, mouseAction.location.y);
-				robot.delay(5);
+				robot.delay(30);
+				for (int i = 0; i < 9; i++) {
+					exploreNewGrids(mouseAction.location.x + dx[i], mouseAction.location.y + dy[i]);
+				}
 			}
+			controller.think();
 		}
 		
 	}
 
 
-
-	private void detectNewGrids(int sx, int sy) {
+	private void exploreNewGrids(int sx, int sy) throws InterruptedException {
+		if (MineFieldInfo.isOut(sx, sy) || visited[sy][sx]) {
+			return;
+		}
+		Integer number = recognizer.tellGridNumber(sx, sy);
+//		System.out.println(sx + "," + sy + " - " + number);
+		if (number == null) {
+			throw new RuntimeException("Grid recognition exception");
+		}
+		if (number == 9) {
+			throw new RuntimeException("Bomb!");
+		}
+		if (number == 10) {
+			return;
+		}
+		controller.informNewUncoverdGrid(sx, sy, number);
+		visited[sy][sx] = true;
 		for (int i = 0; i < 9; i++) {
-			int tx = sx + dx[i];
-			int ty = sy + dy[i];
-			if (tx >= 0 && tx < MineFieldInfo.xGrids && ty >= 0 && ty < MineFieldInfo.yGrids && !visited[ty][tx]) {
-				Integer number = recognizer.tellGridNumber(tx, ty);
-				if (number == null || number <= 9) {
-					controller.informNewUncoverdGrid(tx, ty, number);
-					visited[ty][tx] = true;
-				}
-			}
+			exploreNewGrids(sx + dx[i], sy + dy[i]);
 		}
 	}
 	
