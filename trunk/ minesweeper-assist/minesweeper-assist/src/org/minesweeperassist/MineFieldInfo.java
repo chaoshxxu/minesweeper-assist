@@ -1,45 +1,59 @@
 package org.minesweeperassist;
 
+import java.awt.Point;
+
 public class MineFieldInfo {
 	
 	/**
-	 * 雷区的左端x坐标
+	 * 左上格子的原点坐标
 	 */
-	public static int minX;
+	public static Point ltOriginCoord;
 
 	/**
-	 * 雷区的右端x坐标
+	 * 右下格子的原点坐标
 	 */
-	public static int maxX;
+	public static Point rbOriginCoord;
 
-	/**
-	 * 雷区的上端y坐标
-	 */
-	public static int minY;
-
-	/**
-	 * 雷区的下端y坐标
-	 */
-	public static int maxY;
-	
 	/**
 	 * 每个格子y方向的像素数
 	 */
-	public static int gridHeight;
+	public static Integer gridHeight;
 	
 	/**
 	 * 每个格子x方向的像素数
 	 */
-	public static int gridWidth;
+	public static Integer gridWidth;
 	
 	/**
 	 * y方向有多少格子
 	 */
-	public static int yGrids;
+	public static Integer yGrids;
 	
 	/**
 	 * x方向有多少格子
 	 */
-	public static int xGrids;
+	public static Integer xGrids;
+	
+	public static Point getScreenCoord(Point p) {
+		int screenX = MineFieldInfo.ltOriginCoord.x + MineFieldInfo.gridWidth * p.x + MineFieldInfo.gridWidth / 2;
+		int screenY = MineFieldInfo.ltOriginCoord.y + MineFieldInfo.gridHeight * p.y + MineFieldInfo.gridHeight / 2;
+		return new Point(screenX, screenY);
+	}
+	
+	public static Point getGridCoord(Point location) {
+		int gridX = (location.x - MineFieldInfo.ltOriginCoord.x) / MineFieldInfo.gridWidth;
+		int gridY = (location.y - MineFieldInfo.ltOriginCoord.y) / MineFieldInfo.gridHeight;
+		return new Point(gridX, gridY);
+	}
+	
+	public static boolean isOut(Point p) {
+		return p.x < 0 || p.x >= xGrids || p.y < 0 || p.y >= yGrids;
+	}
+
+	public static boolean isOut(int x, int y) {
+		return x < 0 || x >= xGrids || y < 0 || y >= yGrids;
+	}
+
+
 
 }

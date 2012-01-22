@@ -2,6 +2,7 @@ package org.minesweeperassist;
 
 import java.awt.AWTException;
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.Robot;
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,7 +14,7 @@ import java.util.regex.Pattern;
 public class GridNumberRecognizer {
 	
 	/**
-	 * 0	开
+	 * 0	底色
 	 * 1	开
 	 * 2	开
 	 * 3	开
@@ -24,37 +25,47 @@ public class GridNumberRecognizer {
 	 * 8	开
 	 * 9	Bomb!
 	 * 10	未开
-	 * 11	插旗
 	 *
-	 * -----
-	 * |0|1|
-	 * |- -|
-	 * |2|3|
-	 * -----
-	 * 
 	 */
-	private Color gridSign[][] = new Color[12][4];
+	private Color gridSign[] = new Color[11];
+	
+	private Point offset[] = new Point[11];
 	
 	private Robot robot;
 	
-	
 	public GridNumberRecognizer(File file) throws IOException, AWTException {
+		System.out.println(file.getAbsolutePath());
+		Pattern pattern1 = Pattern.compile("\\D*(\\d+)\\D*");
+		Pattern pattern2 = Pattern.compile("\\D*(\\d+)\\D+(\\d+)\\D*");
+		Pattern pattern3 = Pattern.compile("\\D*(\\d+)\\D+(\\d+)\\D+(\\d+)\\D*");
+		
 		FileReader fr = new FileReader(file);
 		BufferedReader br = new BufferedReader(fr);
-		Integer number = null, idx = 0;
+		Integer number = null;
 		while (br.ready()) {
 			String line = br.readLine();
-			if (line.matches("\\d+")) {
-				number = Integer.parseInt(line);
-			} else {
-				Matcher matcher = Pattern.compile("(\\d+)\\D+(\\d+)\\D+(\\d+)").matcher(line);
-				if (matcher.find()) {
-					int r = Integer.parseInt(matcher.group(1));
-					int g = Integer.parseInt(matcher.group(2));
-					int b = Integer.parseInt(matcher.group(3));
-					gridSign[number][idx] = new Color(r, g, b);
-					idx = (idx + 1) % 4;
-				}
+
+			Matcher matcher3 = pattern3.matcher(line);
+			if (matcher3.find()) {
+				int r = Integer.parseInt(matcher3.group(1));
+				int g = Integer.parseInt(matcher3.group(2));
+				int b = Integer.parseInt(matcher3.group(3));
+				gridSign[number] = new Color(r, g, b);
+				continue;
+			}
+
+			Matcher matcher2 = pattern2.matcher(line);
+			if (matcher2.find()) {
+				int x = Integer.parseInt(matcher2.group(1));
+				int y = Integer.parseInt(matcher2.group(2));
+				offset[number] = new Point(x, y);
+				continue;
+			}
+
+			Matcher matcher1 = pattern1.matcher(line);
+			if (matcher1.find()) {
+				number = Integer.parseInt(matcher1.group(1));
+				continue;
 			}
 		}
 		br.close();
@@ -70,30 +81,15 @@ public class GridNumberRecognizer {
 	 * @return 返回找打的数字
 	 */
 	public Integer tellGridNumber(int gridX, int gridY) {
-		boolean blankFound = false;
-		for (int y = MineFieldInfo.minY + gridY * MineFieldInfo.gridHeight; y < MineFieldInfo.minY + (gridY + 1) * MineFieldInfo.gridHeight - 1; y++) {
-			for (int x = MineFieldInfo.minX + gridX * MineFieldInfo.gridWidth; x < MineFieldInfo.minX + (gridX + 1) * MineFieldInfo.gridWidth - 1; x++) {
-				Color ltColor = robot.getPixelColor(x, y);
-				Color rtColor = robot.getPixelColor(x + 1, y);
-				Color lbColor = robot.getPixelColor(x, y + 1);
-				Color rbColor = robot.getPixelColor(x + 1, y + 1);
-				for (int i = 0; i <= 11; i++) {
-					if (ltColor.equals(gridSign[i][0]) && rtColor.equals(gridSign[i][1]) && lbColor.equals(gridSign[i][2]) && rbColor.equals(gridSign[i][3])) {
-						if (i > 0) {
-							return i;
-						} else {
-							blankFound = true;
-						}
-					}
-				}
+		for (int i = 10; i >= 0; i--) {
+			int baseX = MineFieldInfo.ltOriginCoord.x + gridX * MineFieldInfo.gridWidth;
+			int baseY = MineFieldInfo.ltOriginCoord.y + gridY * MineFieldInfo.gridHeight;
+			Color factColor = robot.getPixelColor(baseX + offset[i].x, baseY + offset[i].y);
+			if (factColor.equals(gridSign[i])) {
+				return i;
 			}
 		}
-		if (!blankFound) {
-			throw new RuntimeException("格子识别异常!");
-		}
-		return 0;
+		return null;
 	}
-	
-	
 
 }
