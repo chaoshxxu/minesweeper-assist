@@ -82,10 +82,12 @@ public class Clicker extends Thread {
 					robot.mouseRelease(InputEvent.BUTTON3_MASK);
 					robot.mouseRelease(InputEvent.BUTTON1_MASK);
 				}
-				robot.delay(30);
-				for (int i = 0; i < 9; i++) {
-					exploreNewGrids(mouseAction.location.x + dx[i], mouseAction.location.y + dy[i]);
-				}
+				robot.delay(10);
+				do {
+					for (int i = 0; i < 9; i++) {
+						exploreNewGrids(mouseAction.location.x + dx[i], mouseAction.location.y + dy[i]);
+					}
+				} while (!visited[mouseAction.location.y][mouseAction.location.x]);
 			}
 			controller.think();
 		}
