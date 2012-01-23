@@ -3,10 +3,14 @@ package org.minesweeperassist;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.minesweeperassist.MouseAction.ClickType;
@@ -26,21 +30,56 @@ public class Controller {
 	
 	private Grid[][] grids;
 
+	private int[][] groupId;
+	
+	private int curGroupId;
+	
 	private Random random = new Random();
+	
 
-	private static int dy[] = {-1, -1, -1, 0, 0, 1, 1, 1}; 
-	private static int dx[] = {-1, 0, 1, -1, 1, -1, 0, 1}; 
+	private static int dy[] = {-1, -1, 0, 1, 1, 1, 0, -1}; 
+	private static int dx[] = {0, 1, 1, 1, 0, -1, -1, -1}; 
 
 	
 	public Controller() {
 		newGrids = new LinkedList<Point>();
 		grids = new Grid[MineFieldInfo.yGrids][MineFieldInfo.xGrids];
+		groupId = new int[MineFieldInfo.yGrids][MineFieldInfo.xGrids];
 		for (int y = 0; y < MineFieldInfo.yGrids; y++) {
 			for (int x = 0; x < MineFieldInfo.xGrids; x++) {
 				grids[y][x] = new Grid();
 				grids[y][x].x = x;
 				grids[y][x].y = y;
 				grids[y][x].gridStatus = GridStatus.UNKNOWN;
+			}
+		}
+	}
+	
+
+	/**
+	 * 返回该组格子数目
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	private int groupSize;
+	private void findGroup(int x, int y) {
+		groupId[y][x] = curGroupId;
+		GridStatus thisStatus = grids[y][x].gridStatus;
+		if (thisStatus != GridStatus.OPEN) {
+			groupSize++;
+		}
+		for (int i = 0; i < 8; i++) {
+			int tx = x + dx[i];
+			int ty = y + dy[i];
+			if (MineFieldInfo.isOut(tx, ty) || groupId[ty][tx] >= 0) {
+				continue;
+			}
+			GridStatus thatStatus = grids[ty][tx].gridStatus;
+			if (thatStatus == GridStatus.OPEN || thatStatus == GridStatus.UNKNOWN || thatStatus == GridStatus.NOT_MINE) {
+				if (thisStatus != GridStatus.OPEN || thatStatus != GridStatus.OPEN) {
+					findGroup(tx, ty);
+				}
 			}
 		}
 	}
@@ -57,30 +96,52 @@ public class Controller {
 		Point mouseScreenCoor = MouseInfo.getPointerInfo().getLocation();
 		Point mouseGridCoord = MineFieldInfo.getGridCoord(mouseScreenCoor);
 		
-		int openCnt = 0;
-
+		for (int[] array : groupId) {
+			Arrays.fill(array, -1);
+		}
+		curGroupId = 0;
+		
+		int minGroupSize = 0x7fffffff;
+		int minGroupId = -1;
 		for (int y = 0; y < MineFieldInfo.yGrids; y++) {
 			for (int x = 0; x < MineFieldInfo.xGrids; x++) {
+				if (groupId[y][x] < 0 && (grids[y][x].gridStatus == GridStatus.UNKNOWN || grids[y][x].gridStatus == GridStatus.NOT_MINE)) {
+					groupSize = 0;
+					findGroup(x, y);
+					if (groupSize < minGroupSize) {
+						minGroupSize = groupSize;
+						minGroupId = curGroupId;
+					}
+					curGroupId++;
+				}
+			}
+		}
+		
+		for (int y = 0; y < MineFieldInfo.yGrids; y++) {
+			for (int x = 0; x < MineFieldInfo.xGrids; x++) {
+				if (groupId[y][x] != minGroupId) {
+					continue;
+				}
 				Point curGrid = new Point(x, y);
 				if (grids[y][x].gridStatus == GridStatus.NOT_MINE && (nearestNotMine == null || curGrid.distanceSq(mouseGridCoord) < nearestNotMine.distanceSq(mouseGridCoord))) {
 					nearestNotMine = curGrid;
 				} else if (nearestNotMine == null && grids[y][x].gridStatus == GridStatus.UNKNOWN && (nearestUnknown == null || curGrid.distanceSq(mouseGridCoord) < nearestUnknown.distanceSq(mouseGridCoord))) {
 					nearestUnknown = curGrid;
-				} else if (grids[y][x].gridStatus == GridStatus.OPEN) {
-					openCnt++;
 				}
 			}
 		}
 		
 		if (nearestNotMine != null) {
 			result.add(new MouseAction(nearestNotMine, ClickType.LEFT));
-		} else if (nearestUnknown != null && openCnt < 50) {
+		} else if (nearestUnknown != null) {
 			result.add(new MouseAction(nearestUnknown, ClickType.LEFT));
 		}
 		
 		return result;
 	}
 	
+
+
 	public void informNewUncoverdGrid(int x, int y, Integer number) throws InterruptedException {
 		if (number == null) {
 			throw new RuntimeException();
