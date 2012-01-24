@@ -90,8 +90,6 @@ public class Controller {
 	 */
 	public List<MouseAction> getActions() {
 		List<MouseAction> result = new ArrayList<MouseAction>();
-		Point nearestNotMine = null;
-		Point nearestUnknown = null;
 		
 		Point mouseScreenCoor = MouseInfo.getPointerInfo().getLocation();
 		Point mouseGridCoord = MineFieldInfo.getGridCoord(mouseScreenCoor);
@@ -117,24 +115,62 @@ public class Controller {
 			}
 		}
 		
+		double maxValue = -999999.9999;
 		for (int y = 0; y < MineFieldInfo.yGrids; y++) {
 			for (int x = 0; x < MineFieldInfo.xGrids; x++) {
 				if (groupId[y][x] != minGroupId) {
 					continue;
 				}
 				Point curGrid = new Point(x, y);
-				if (grids[y][x].gridStatus == GridStatus.NOT_MINE && (nearestNotMine == null || curGrid.distanceSq(mouseGridCoord) < nearestNotMine.distanceSq(mouseGridCoord))) {
-					nearestNotMine = curGrid;
-				} else if (nearestNotMine == null && grids[y][x].gridStatus == GridStatus.UNKNOWN && (nearestUnknown == null || curGrid.distanceSq(mouseGridCoord) < nearestUnknown.distanceSq(mouseGridCoord))) {
-					nearestUnknown = curGrid;
+				if (grids[y][x].gridStatus == GridStatus.NOT_MINE) {
+					double value = -curGrid.distanceSq(mouseGridCoord) / 10000.0;
+					if (value > maxValue) {
+						maxValue = value;
+						result.clear();
+						result.add(new MouseAction(curGrid, ClickType.LEFT));
+					}
+				} else if (grids[y][x].gridStatus == GridStatus.OPEN) {
+					double value = -1.0 - curGrid.distanceSq(mouseGridCoord) / 10000.0;
+					boolean existUncovered = false;
+					if (grids[y][x].isClear() && grids[y][x].mineNumber > 0) {
+						List<MouseAction> tempResult = new ArrayList<MouseAction>();
+						for (int i = 0; i < 8; i++) {
+							int tx = x + dx[i];
+							int ty = y + dy[i];
+							if (MineFieldInfo.isOut(tx, ty)) {
+								continue;
+							}
+							if (grids[ty][tx].gridStatus == GridStatus.NOT_MINE) {
+								value = value + 1.0;
+								existUncovered = true;
+							} else if (grids[ty][tx].gridStatus == GridStatus.MINE_NOT_FLAGGED) {
+								value = value - 1.0;
+								tempResult.add(new MouseAction(new Point(tx, ty), ClickType.RIGHT));
+							}
+						}
+						if (existUncovered && value > maxValue) {
+							maxValue = value;
+							result.clear();
+							result.addAll(tempResult);
+							result.add(new MouseAction(curGrid, ClickType.DOUBLE));
+						}
+						
+					}
+				} else if (grids[y][x].gridStatus == GridStatus.UNKNOWN) {
+					double value = -100.00 - curGrid.distanceSq(mouseGridCoord) / 10000.0;
+					if (value > maxValue) {
+						maxValue = value;
+						result.clear();
+						result.add(new MouseAction(curGrid, ClickType.LEFT));
+					}
 				}
 			}
 		}
 		
-		if (nearestNotMine != null) {
-			result.add(new MouseAction(nearestNotMine, ClickType.LEFT));
-		} else if (nearestUnknown != null) {
-			result.add(new MouseAction(nearestUnknown, ClickType.LEFT));
+		for (MouseAction mouseAction : result) {
+			if (mouseAction.clickType == ClickType.RIGHT) {
+				grids[mouseAction.location.y][mouseAction.location.x].gridStatus = GridStatus.MINE_FLAGGED;
+			}
 		}
 		
 		return result;
@@ -153,6 +189,7 @@ public class Controller {
 	
 	public void think() throws InterruptedException {
 		while (!newGrids.isEmpty()) {
+			System.out.println("newGrids size: " + newGrids.size());
 			Point grid = newGrids.poll();
 			if (grids[grid.y][grid.x].isClear()) {
 				continue;
@@ -359,7 +396,7 @@ public class Controller {
 			this.gridStatus = status;
 			for (int i = 0; i < 8; i++) {
 				Point p = new Point(x + dx[i], y + dy[i]);
-				if (!MineFieldInfo.isOut(p) && grids[p.y][p.x].gridStatus == GridStatus.OPEN && !newGrids.contains(p)) {
+				if (!MineFieldInfo.isOut(p) && grids[p.y][p.x].gridStatus == GridStatus.OPEN) {
 					newGrids.add(p);
 				}
 			}

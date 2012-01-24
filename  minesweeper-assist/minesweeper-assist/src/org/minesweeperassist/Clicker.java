@@ -87,7 +87,7 @@ public class Clicker extends Thread {
 					for (int i = 0; i < 9; i++) {
 						exploreNewGrids(mouseAction.location.x + dx[i], mouseAction.location.y + dy[i]);
 					}
-				} while (!visited[mouseAction.location.y][mouseAction.location.x]);
+				} while (mouseAction.clickType != ClickType.RIGHT && !visited[mouseAction.location.y][mouseAction.location.x]);
 			}
 			controller.think();
 		}
