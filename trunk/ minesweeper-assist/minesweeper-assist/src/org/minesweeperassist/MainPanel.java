@@ -8,17 +8,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 import java.io.File;
 
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -37,6 +36,9 @@ public class MainPanel extends JPanel {
 	JLabel rbGridOriginLocationLabel;
 	JButton ltCaptureBtn;
 	JButton rbCaptureBtn;
+	JRadioButton flagBtn;
+	JRadioButton noFlagBtn;
+	JTextField reactionTimeTF;
 	JButton startBtn;
 	
 	
@@ -60,7 +62,7 @@ public class MainPanel extends JPanel {
 				}
 			}
 		});
-		setLayout(new GridLayout(7, 2));
+		setLayout(new GridLayout(9, 2, 2, 2));
 		initComponents();
 	}
 	
@@ -130,20 +132,6 @@ public class MainPanel extends JPanel {
 	
 		////////////////////////////
 		
-		add(new JLabel("left-top grid origin coord:"));
-		
-		ltGridOriginLocationLabel = new JLabel();
-		add(ltGridOriginLocationLabel);
-		
-		////////////////////////////
-		
-		add(new JLabel("right-bottom grid origin coord:"));
-		
-		rbGridOriginLocationLabel = new JLabel();
-		add(rbGridOriginLocationLabel);
-		
-		////////////////////////////
-		
 		ltCaptureBtn = new JButton();
 		ltCaptureBtn.setText("Catch left-top origin");
 		ltCaptureBtn.setDisplayedMnemonicIndex(7);
@@ -156,6 +144,11 @@ public class MainPanel extends JPanel {
 			}
 		});
 		add(ltCaptureBtn);
+		
+		ltGridOriginLocationLabel = new JLabel();
+		add(ltGridOriginLocationLabel);
+		
+		////////////////////////////
 		
 		rbCaptureBtn = new JButton();
 		rbCaptureBtn.setText("Catch right-bottom origin");
@@ -170,6 +163,28 @@ public class MainPanel extends JPanel {
 		});
 		add(rbCaptureBtn);
 		
+		rbGridOriginLocationLabel = new JLabel();
+		add(rbGridOriginLocationLabel);
+		
+		////////////////////////////
+		
+		add(new JLabel("Click type:"));
+		
+		flagBtn = new JRadioButton("Flag", true);
+		noFlagBtn = new JRadioButton("NF", false);
+		ButtonGroup clickTypeButtonGroup = new ButtonGroup();
+		clickTypeButtonGroup.add(flagBtn);
+		clickTypeButtonGroup.add(noFlagBtn); 
+		add(flagBtn);
+		add(new JLabel());
+		add(noFlagBtn);
+		
+		////////////////////////////
+		
+		add(new JLabel("Reaction time(ms):"));
+		reactionTimeTF = new JTextField("30");
+		add(reactionTimeTF);
+
 		////////////////////////////
 		
 		add(new JLabel());
@@ -245,7 +260,7 @@ public class MainPanel extends JPanel {
 		ImageIcon icon1 = new ImageIcon("image/finish.png");
 		frame.setIconImage(icon1.getImage()); // 设置标题栏图标
 
-		frame.setPreferredSize(new Dimension(360, 200));
+		frame.setPreferredSize(new Dimension(400, 230));
 		frame.pack(); // 不加只用setSize即可 加上需先设定setPreferredSize
 		frame.setVisible(true);
 

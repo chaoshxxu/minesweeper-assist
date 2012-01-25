@@ -1,6 +1,7 @@
 package org.minesweeperassist;
 
 import java.awt.Point;
+import java.util.Random;
 
 public class MineFieldInfo {
 	
@@ -34,9 +35,11 @@ public class MineFieldInfo {
 	 */
 	public static Integer xGrids;
 	
+	private static Random random = new Random();
+	
 	public static Point getScreenCoord(Point p) {
-		int screenX = MineFieldInfo.ltOriginCoord.x + MineFieldInfo.gridWidth * p.x + MineFieldInfo.gridWidth / 2;
-		int screenY = MineFieldInfo.ltOriginCoord.y + MineFieldInfo.gridHeight * p.y + MineFieldInfo.gridHeight / 2;
+		int screenX = MineFieldInfo.ltOriginCoord.x + MineFieldInfo.gridWidth * p.x + MineFieldInfo.gridWidth / 2 + random.nextInt(MineFieldInfo.gridWidth * 4 / 5) - MineFieldInfo.gridWidth * 2 / 5;
+		int screenY = MineFieldInfo.ltOriginCoord.y + MineFieldInfo.gridHeight * p.y + MineFieldInfo.gridHeight / 2 + random.nextInt(MineFieldInfo.gridHeight * 4 / 5) - MineFieldInfo.gridHeight * 2 / 5;;
 		return new Point(screenX, screenY);
 	}
 	
