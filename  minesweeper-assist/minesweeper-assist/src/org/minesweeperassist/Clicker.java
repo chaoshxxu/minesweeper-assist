@@ -22,6 +22,8 @@ public class Clicker extends Thread {
 	private GridNumberRecognizer recognizer;
 	private Robot robot;
 	
+	private int reactionTime;
+	
 	private boolean visited[][];
 	
 	private static int dy[] = {-1, -1, -1, 0, 0, 0, 1, 1, 1}; 
@@ -32,6 +34,7 @@ public class Clicker extends Thread {
 		this.recognizer = recognizer;
 		this.robot = new Robot();
 		visited = new boolean[MineFieldInfo.yGrids][MineFieldInfo.xGrids];
+		reactionTime = Integer.parseInt(MainPanel.instance.reactionTimeTF.getText());
 	}
 	
 	@Override
@@ -60,16 +63,40 @@ public class Clicker extends Thread {
 		}
 	}
 
+	private Point lastPosition;
+	private void moveTo(Point target) {
+		Point screenCoord = MineFieldInfo.getScreenCoord(target);
+		if (lastPosition == null) {
+			robot.mouseMove(screenCoord.x, screenCoord.y);
+			lastPosition = screenCoord;
+			return;
+		}
+		double dist = lastPosition.distance(screenCoord);
+		double time = Math.pow(dist, 2.0) / 100.0 + 100;
+//		System.out.println(dist + "px " + time + "ms");
+		int stepNum = (int) Math.round(time / 10);
+		for (int i = 1; i <= stepNum; i++) {
+			robot.mouseMove(lastPosition.x + (screenCoord.x - lastPosition.x) * i / stepNum, lastPosition.y + (screenCoord.y - lastPosition.y) * i / stepNum);
+			if (i < stepNum / 3) {
+				robot.delay(5);
+			} else if (i < stepNum * 2 / 3){
+				robot.delay(20);
+			} else {
+				robot.delay(5);
+			}
+		}
+		lastPosition = screenCoord;
+	}
 	private void letsMove() throws InterruptedException {
+		moveTo(new Point(MineFieldInfo.xGrids / 2, MineFieldInfo.yGrids / 2));
 		while (true) {
 			List<MouseAction> actions = controller.getActions();
 			if (actions.isEmpty()) {
 				break;
 			}
 			for (MouseAction mouseAction : actions) {
-				System.out.println(mouseAction.location.x + "," + mouseAction.location.y);
-				Point screenCoord = MineFieldInfo.getScreenCoord(mouseAction.location);
-				robot.mouseMove(screenCoord.x, screenCoord.y);
+				System.out.println(mouseAction.location.x + "," + mouseAction.location.y + " " + mouseAction.clickType);
+				moveTo(mouseAction.location);
 				if (mouseAction.clickType == ClickType.LEFT) {
 					robot.mousePress(InputEvent.BUTTON1_MASK);
 					robot.mouseRelease(InputEvent.BUTTON1_MASK);
@@ -82,7 +109,7 @@ public class Clicker extends Thread {
 					robot.mouseRelease(InputEvent.BUTTON3_MASK);
 					robot.mouseRelease(InputEvent.BUTTON1_MASK);
 				}
-				robot.delay(10);
+				robot.delay(reactionTime);
 				do {
 					for (int i = 0; i < 9; i++) {
 						exploreNewGrids(mouseAction.location.x + dx[i], mouseAction.location.y + dy[i]);
