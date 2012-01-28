@@ -179,8 +179,11 @@ public class Controller {
 			throw new RuntimeException();
 		}
 		grids[y][x].mineNumber = number;
+		if (grids[y][x].gridStatus == GridStatus.UNKNOWN) {
+			grids[y][x].confirmStatus(GridStatus.NOT_MINE);
+		}
 		grids[y][x].gridStatus = GridStatus.OPEN;
-		newGrids.offer(new Point(x, y));
+		newGrids.add(new Point(x, y));
 	}
 	
 	public void think() throws InterruptedException {
@@ -392,7 +395,7 @@ public class Controller {
 			this.gridStatus = status;
 			for (int i = 0; i < 8; i++) {
 				Point p = new Point(x + dx[i], y + dy[i]);
-				if (!MineFieldInfo.isOut(p) && grids[p.y][p.x].gridStatus == GridStatus.OPEN) {
+				if (!MineFieldInfo.isOut(p) && grids[p.y][p.x].gridStatus == GridStatus.OPEN && !newGrids.contains(p)) {
 					newGrids.add(p);
 				}
 			}
