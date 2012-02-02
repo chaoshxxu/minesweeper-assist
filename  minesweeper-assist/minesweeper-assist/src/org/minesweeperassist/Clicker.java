@@ -1,11 +1,9 @@
 package org.minesweeperassist;
 
 import java.awt.AWTException;
-import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
-import java.util.Date;
 import java.util.List;
 
 import org.minesweeperassist.MouseAction.ClickType;
@@ -72,18 +70,12 @@ public class Clicker extends Thread {
 			return;
 		}
 		double dist = lastPosition.distance(screenCoord);
-		double time = Math.pow(dist, 2.0) / 100.0 + 100;
+		double time = Math.pow(dist, 2.0) / 100.0 + 50;
 //		System.out.println(dist + "px " + time + "ms");
 		int stepNum = (int) Math.round(time / 10);
 		for (int i = 1; i <= stepNum; i++) {
 			robot.mouseMove(lastPosition.x + (screenCoord.x - lastPosition.x) * i / stepNum, lastPosition.y + (screenCoord.y - lastPosition.y) * i / stepNum);
-			if (i < stepNum / 3) {
-				robot.delay(5);
-			} else if (i < stepNum * 2 / 3){
-				robot.delay(20);
-			} else {
-				robot.delay(5);
-			}
+			robot.delay(10);
 		}
 		lastPosition = screenCoord;
 	}
@@ -110,11 +102,17 @@ public class Clicker extends Thread {
 					robot.mouseRelease(InputEvent.BUTTON1_MASK);
 				}
 				robot.delay(reactionTime);
-				do {
+				while (true) {
 					for (int i = 0; i < 9; i++) {
 						exploreNewGrids(mouseAction.location.x + dx[i], mouseAction.location.y + dy[i]);
 					}
-				} while (mouseAction.clickType != ClickType.RIGHT && !visited[mouseAction.location.y][mouseAction.location.x]);
+					if (mouseAction.clickType == ClickType.RIGHT || visited[mouseAction.location.y][mouseAction.location.x]) {
+						break;
+					} else {
+						robot.mousePress(InputEvent.BUTTON1_MASK);
+						robot.mouseRelease(InputEvent.BUTTON1_MASK);
+					}
+				}
 			}
 			controller.think();
 		}
