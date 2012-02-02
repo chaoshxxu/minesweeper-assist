@@ -11,6 +11,11 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * 格子识别逻辑
+ * @author Isun
+ *
+ */
 public class GridNumberRecognizer {
 	
 	/**

@@ -21,8 +21,15 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+/**
+ * 主UI
+ * @author Isun
+ *
+ */
 public class MainPanel extends JPanel {
 	
+	private static final long serialVersionUID = 1L;
+
 	static MainPanel instance;
 	
 	Controller controller;

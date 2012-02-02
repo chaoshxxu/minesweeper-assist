@@ -3,6 +3,11 @@ package org.minesweeperassist;
 import java.awt.Point;
 import java.util.Random;
 
+/**
+ * 雷局信息，记录一些全局变量
+ * @author Isun
+ *
+ */
 public class MineFieldInfo {
 	
 	/**

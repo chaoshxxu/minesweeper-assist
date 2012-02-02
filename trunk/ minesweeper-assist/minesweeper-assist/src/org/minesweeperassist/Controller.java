@@ -4,17 +4,12 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.minesweeperassist.MouseAction.ClickType;
-import org.omg.CORBA.UNKNOWN;
 
 /**
  * 控制器，控制鼠标动作
@@ -207,20 +202,14 @@ public class Controller {
 	}
 	
 	public void displayStatus() {
-		System.out.println("Mine number");
+		System.out.println("Mine status:");
 		for (int y = 0; y < MineFieldInfo.yGrids; y++) {
 			for (int x = 0; x < MineFieldInfo.xGrids; x++) {
 				if (grids[y][x].mineNumber != null) {
-					System.out.print(grids[y][x].mineNumber + " ");
+					System.out.print(grids[y][x].mineNumber);
 				} else {
-					System.out.print("  ");
+					System.out.print(" ");
 				}
-			}
-			System.out.println();
-		}
-		System.out.println("\nGrid status:");
-		for (int y = 0; y < MineFieldInfo.yGrids; y++) {
-			for (int x = 0; x < MineFieldInfo.xGrids; x++) {
 				System.out.print(
 						grids[y][x].gridStatus == GridStatus.UNKNOWN ? " " :
 						grids[y][x].gridStatus == GridStatus.NOT_MINE ? 1 :
