@@ -46,6 +46,10 @@ public class MainPanel extends JPanel {
 	JRadioButton flagBtn;
 	JRadioButton noFlagBtn;
 	JTextField reactionTimeTF;
+	JTextField move1GridTimeTF;
+	JTextField move10GridTimeTF;
+	JTextField move20GridTimeTF;
+	JTextField speedRatioTF;
 	JButton startBtn;
 	
 	
@@ -69,7 +73,7 @@ public class MainPanel extends JPanel {
 				}
 			}
 		});
-		setLayout(new GridLayout(9, 2, 2, 2));
+		setLayout(new GridLayout(13, 2, 2, 2));
 		initComponents();
 	}
 	
@@ -194,6 +198,30 @@ public class MainPanel extends JPanel {
 
 		////////////////////////////
 		
+		add(new JLabel("Move 1 grids time(ms):"));
+		move1GridTimeTF = new JTextField("100");
+		add(move1GridTimeTF);
+
+		////////////////////////////
+		
+		add(new JLabel("Move 10 grids time(ms):"));
+		move10GridTimeTF = new JTextField("500");
+		add(move10GridTimeTF);
+
+		////////////////////////////
+		
+		add(new JLabel("Move 20 grids time(ms):"));
+		move20GridTimeTF = new JTextField("600");
+		add(move20GridTimeTF);
+
+		////////////////////////////
+		
+		add(new JLabel("Speed change ratio:"));
+		speedRatioTF = new JTextField("0.2");
+		add(speedRatioTF);
+
+		////////////////////////////
+		
 		add(new JLabel());
 		
 		startBtn = new JButton();
@@ -267,7 +295,7 @@ public class MainPanel extends JPanel {
 		ImageIcon icon1 = new ImageIcon("image/finish.png");
 		frame.setIconImage(icon1.getImage()); // 设置标题栏图标
 
-		frame.setPreferredSize(new Dimension(400, 230));
+		frame.setPreferredSize(new Dimension(400, 350));
 		frame.pack(); // 不加只用setSize即可 加上需先设定setPreferredSize
 		frame.setVisible(true);
 
