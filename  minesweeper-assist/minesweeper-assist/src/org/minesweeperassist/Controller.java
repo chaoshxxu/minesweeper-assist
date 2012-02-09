@@ -120,11 +120,11 @@ public class Controller {
 				List<MouseAction> tempResult = new ArrayList<MouseAction>();
 				Point curGrid = new Point(x, y);
 				if (grids[y][x].gridStatus == GridStatus.NOT_MINE) {
-					value = -curGrid.distance(mouseGridCoord) / 5.0;
+					value = -curGrid.distance(mouseGridCoord) / 4.0;
 					tempResult.add(new MouseAction(curGrid, ClickType.LEFT));
 				} else if (grids[y][x].gridStatus == GridStatus.OPEN && MainPanel.instance.flagBtn.isSelected()) {
 					if (grids[y][x].isClear() && grids[y][x].mineNumber > 0) {
-						value = -0.999 - curGrid.distance(mouseGridCoord) / 5.0;
+						value = -0.999 - curGrid.distance(mouseGridCoord) / 4.0;
 						boolean existUncovered = false;
 						for (int i = 0; i < 8; i++) {
 							int tx = x + dx[i];
@@ -147,7 +147,7 @@ public class Controller {
 						}
 					}
 				} else if (grids[y][x].gridStatus == GridStatus.UNKNOWN) {
-					value = -100.00 - curGrid.distanceSq(mouseGridCoord) / 5.0;
+					value = -100.00 - curGrid.distanceSq(mouseGridCoord) / 4.0;
 					tempResult.add(new MouseAction(curGrid, ClickType.LEFT));
 				}
 				value += random.nextDouble() / 1000000.0;

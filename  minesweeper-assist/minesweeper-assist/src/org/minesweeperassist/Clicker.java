@@ -20,7 +20,15 @@ public class Clicker extends Thread {
 	private GridNumberRecognizer recognizer;
 	private Robot robot;
 	
-	private int reactionTime;
+	private Double reactionTime;
+	private double move1GridTime;
+	private double move10GridTime;
+	private double move20GridTime;
+	private double speedRatio;
+	
+	private double a;
+	private double b;
+	private double c;
 	
 	private boolean visited[][];
 	
@@ -32,7 +40,21 @@ public class Clicker extends Thread {
 		this.recognizer = recognizer;
 		this.robot = new Robot();
 		visited = new boolean[MineFieldInfo.yGrids][MineFieldInfo.xGrids];
-		reactionTime = Integer.parseInt(MainPanel.instance.reactionTimeTF.getText());
+		reactionTime = Double.parseDouble(MainPanel.instance.reactionTimeTF.getText());
+		move1GridTime = Double.parseDouble(MainPanel.instance.move1GridTimeTF.getText());
+		move10GridTime = Double.parseDouble(MainPanel.instance.move10GridTimeTF.getText());
+		move20GridTime = Double.parseDouble(MainPanel.instance.move20GridTimeTF.getText());
+		speedRatio = Double.parseDouble(MainPanel.instance.speedRatioTF.getText());
+
+		double s1 = 1 * (MineFieldInfo.gridWidth + MineFieldInfo.gridHeight) / 2;
+		double s2 = 10 * (MineFieldInfo.gridWidth + MineFieldInfo.gridHeight) / 2;
+		double s3 = 20 * (MineFieldInfo.gridWidth + MineFieldInfo.gridHeight) / 2;
+		double t1 = move1GridTime;
+		double t2 = move10GridTime;
+		double t3 = move20GridTime;
+		a = ((s1 - s3) * (t1 - t2) - (s1 - s2) * (t1 - t3)) / ((s1 - s2) * (s1 - s3) * (s2 - s3));
+		b = ((t1 - t2) - a * (s1 * s1 - s2 * s2)) / (s1 - s2);
+		c = t1 - a * s1 * s1 - b * s1;
 	}
 	
 	@Override
@@ -70,13 +92,21 @@ public class Clicker extends Thread {
 			return;
 		}
 		double dist = lastPosition.distance(screenCoord);
-		double time = Math.pow(dist, 2.0) / 100.0 + 50;
+		double time = a * dist * dist + b * dist + c;
+		
+		double v = 2 * dist / (1 + speedRatio) / time;
+		double acc = (speedRatio - 1) * v / time;
 //		System.out.println(dist + "px " + time + "ms");
 		int stepNum = (int) Math.round(time / 10);
 		for (int i = 1; i <= stepNum; i++) {
-			robot.mouseMove(lastPosition.x + (screenCoord.x - lastPosition.x) * i / stepNum, lastPosition.y + (screenCoord.y - lastPosition.y) * i / stepNum);
+			double t = time * i / stepNum; 
+			double offsetRatio = (v * t + acc * t * t / 2.0) / dist;
+			Integer x = ((Long) Math.round(lastPosition.x + (screenCoord.x - lastPosition.x) * offsetRatio)).intValue();
+			Integer y = ((Long) Math.round(lastPosition.y + (screenCoord.y - lastPosition.y) * offsetRatio)).intValue();
+			robot.mouseMove(x, y);
 			robot.delay(10);
 		}
+		robot.mouseMove(screenCoord.x, screenCoord.y);
 		lastPosition = screenCoord;
 	}
 	private void letsMove() throws InterruptedException {
@@ -101,7 +131,7 @@ public class Clicker extends Thread {
 					robot.mouseRelease(InputEvent.BUTTON3_MASK);
 					robot.mouseRelease(InputEvent.BUTTON1_MASK);
 				}
-				robot.delay(reactionTime);
+				robot.delay(reactionTime.intValue());
 				while (true) {
 					for (int i = 0; i < 9; i++) {
 						exploreNewGrids(mouseAction.location.x + dx[i], mouseAction.location.y + dy[i]);
@@ -109,8 +139,8 @@ public class Clicker extends Thread {
 					if (mouseAction.clickType == ClickType.RIGHT || visited[mouseAction.location.y][mouseAction.location.x]) {
 						break;
 					} else {
-						robot.mousePress(InputEvent.BUTTON1_MASK);
-						robot.mouseRelease(InputEvent.BUTTON1_MASK);
+//						robot.mousePress(InputEvent.BUTTON1_MASK);
+//						robot.mouseRelease(InputEvent.BUTTON1_MASK);
 					}
 				}
 			}
