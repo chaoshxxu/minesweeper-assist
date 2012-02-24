@@ -1,6 +1,7 @@
 package org.minesweeperassist;
 
 import java.awt.AWTException;
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
@@ -71,16 +72,19 @@ public class Clicker extends Thread {
 	}
 	
 	private void checkIfNotPlayed() {
+		recognizer.refresh();
 		for (int y = 0; y < MineFieldInfo.yGrids; y++) {
 			for (int x = 0; x < MineFieldInfo.xGrids; x++) {
+				System.out.println(x + " " + y);
 				Integer number = recognizer.tellGridNumber(x, y); 
-				if (number == null) {
-					throw new RuntimeException("Grid recognition exception");
-				} else if (number != 10) {
-					throw new RuntimeException("Please reset the game first");
-				}
+//				if (number == null) {
+//					throw new RuntimeException("Grid recognition exception");
+//				} else if (number != 10) {
+//					throw new RuntimeException("Please reset the game first");
+//				}
 			}
 		}
+		throw new RuntimeException("Grid recognition exception");
 	}
 
 	private Point lastPosition;
@@ -125,6 +129,7 @@ public class Clicker extends Thread {
 				} else if (mouseAction.clickType == ClickType.RIGHT) {
 					robot.mousePress(InputEvent.BUTTON3_MASK);
 					robot.mouseRelease(InputEvent.BUTTON3_MASK);
+					continue;
 				} else if (mouseAction.clickType == ClickType.DOUBLE) {
 					robot.mousePress(InputEvent.BUTTON1_MASK);
 					robot.mousePress(InputEvent.BUTTON3_MASK);
@@ -132,16 +137,12 @@ public class Clicker extends Thread {
 					robot.mouseRelease(InputEvent.BUTTON1_MASK);
 				}
 				robot.delay(reactionTime.intValue());
-				while (true) {
-					for (int i = 0; i < 9; i++) {
-						exploreNewGrids(mouseAction.location.x + dx[i], mouseAction.location.y + dy[i]);
-					}
-					if (mouseAction.clickType == ClickType.RIGHT || visited[mouseAction.location.y][mouseAction.location.x]) {
-						break;
-					} else {
-//						robot.mousePress(InputEvent.BUTTON1_MASK);
-//						robot.mouseRelease(InputEvent.BUTTON1_MASK);
-					}
+				recognizer.refresh();
+				for (int i = 0; i < 9; i++) {
+					exploreNewGrids(mouseAction.location.x + dx[i], mouseAction.location.y + dy[i]);
+				}
+				if (!visited[mouseAction.location.y][mouseAction.location.x]) {
+					throw new RuntimeException("!");
 				}
 			}
 			controller.think();
