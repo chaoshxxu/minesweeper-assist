@@ -1,7 +1,6 @@
 package org.minesweeperassist;
 
 import java.awt.AWTException;
-import java.awt.Color;
 import java.awt.Point;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
@@ -75,16 +74,15 @@ public class Clicker extends Thread {
 		recognizer.refresh();
 		for (int y = 0; y < MineFieldInfo.yGrids; y++) {
 			for (int x = 0; x < MineFieldInfo.xGrids; x++) {
-				System.out.println(x + " " + y);
 				Integer number = recognizer.tellGridNumber(x, y); 
-//				if (number == null) {
-//					throw new RuntimeException("Grid recognition exception");
-//				} else if (number != 10) {
-//					throw new RuntimeException("Please reset the game first");
-//				}
+				System.out.println(x + " " + y + " - " + number);
+				if (number == null) {
+					throw new RuntimeException("Grid recognition exception");
+				} else if (number != 10) {
+					throw new RuntimeException("Please reset the game first");
+				}
 			}
 		}
-		throw new RuntimeException("Grid recognition exception");
 	}
 
 	private Point lastPosition;
