@@ -5,6 +5,7 @@ import java.awt.Point;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
 import java.util.List;
+import java.util.Random;
 
 import org.minesweeperassist.MouseAction.ClickType;
 
@@ -112,7 +113,8 @@ public class Clicker extends Thread {
 		lastPosition = screenCoord;
 	}
 	private void letsMove() throws InterruptedException {
-		moveTo(new Point(MineFieldInfo.xGrids / 2, MineFieldInfo.yGrids / 2));
+		Random random = new Random();
+		moveTo(new Point(random.nextInt(MineFieldInfo.xGrids), random.nextInt(MineFieldInfo.yGrids)));
 		while (true) {
 			List<MouseAction> actions = controller.getActions();
 			if (actions.isEmpty()) {

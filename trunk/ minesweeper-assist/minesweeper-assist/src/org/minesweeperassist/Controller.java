@@ -27,6 +27,11 @@ public class Controller {
 
 	private int[][] groupId;
 	
+	/**
+	 * 某操作是否已经做过
+	 */
+	private boolean[] operationDone;
+	
 	private int curGroupId;
 	
 	private Random random = new Random();
@@ -48,6 +53,7 @@ public class Controller {
 				grids[y][x].gridStatus = GridStatus.UNKNOWN;
 			}
 		}
+		operationDone = new boolean[3 * MineFieldInfo.yGrids * MineFieldInfo.xGrids];
 	}
 	
 
@@ -162,6 +168,11 @@ public class Controller {
 			if (mouseAction.clickType == ClickType.RIGHT) {
 				grids[mouseAction.location.y][mouseAction.location.x].gridStatus = GridStatus.MINE_FLAGGED;
 			}
+			int operationKey = (mouseAction.location.y * MineFieldInfo.xGrids + mouseAction.location.x) * 3 + (mouseAction.clickType == ClickType.LEFT ? 0 : mouseAction.clickType == ClickType.RIGHT ? 1 : 2);
+			if (operationDone[operationKey]) {
+				throw new RuntimeException();
+			}
+			operationDone[operationKey] = true;
 		}
 		
 		return result;
