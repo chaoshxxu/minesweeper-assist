@@ -3,11 +3,12 @@
 
 #### Demo
 http://www.youtube.com/watch?v=7TgYbriHI-4
+
 http://v.youku.com/v_show/id_XMzU5MTY1MzE2.html
 
 #### 使用说明
 
-1. 将minesweeper-assist-yyyyMMdd.rar解压到文件夹里，运行minesweeper-assist.jar ![MainPanel.png](https://minesweeper-assist.googlecode.com/svn/wiki/MainPanel.png)
+1. 将minesweeper-assist-yyyyMMdd.rar解压到文件夹里，运行minesweeper-assist.jar ![MainPanel.png](https://minesweeper-assist.googlecode.com/svn/wiki/MainPanel.png) 
 2. 选择正确的皮肤(Skin)，填写水平格子数(X grids number)、垂直格子数(Y grids number),上图所示为高级局面的参数。
 3. 选择左上角格子的左上角坐标：先将左上角格子点开，再将鼠标*准确*(需要借助放大镜)移动至左上角格子的左上角(即浅灰色区域的左上角)，点击Catch left-top origin按钮。(由于此时鼠标不可能处在该按钮上，因此你需要提前选中该按钮，再用空格键实施点击) ![1.png](https://minesweeper-assist.googlecode.com/svn/wiki/1.png)
 4. 选择右下角格子的左上角坐标：先将右下角格子点开，再将鼠标*大致*(无需借助放大镜)移动至右下角格子的左上角，点击Catch right-bottom origin按钮。(由于此时鼠标不可能处在该按钮上，因此你需要提前选中该按钮，再用空格键实施点击) ![2](https://minesweeper-assist.googlecode.com/svn/wiki/2_new.png)
